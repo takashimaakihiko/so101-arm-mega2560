@@ -92,7 +92,7 @@ void runTeachingMode() {
     drawBigServoLine(32, 5, pos[4], 6, pos[5]);
 
     display.setTextSize(1);
-    display.setCursor(0, 48);
+    display.setCursor(0, 56);
     display.print("[TEACHING MODE]");
 
     display.display();
