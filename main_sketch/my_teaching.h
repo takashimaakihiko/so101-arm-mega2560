@@ -19,27 +19,42 @@ extern SMS_STS st;
 extern Adafruit_SSD1306 display;
 
 // Helper to draw one OLED line with two servo IDs/values.
-// Uses the FreeSans9pt7b GFX font for a clean, larger look without
-// the blocky pixel-doubling of setTextSize(2). -1 positions render as "ERR".
+// The small "01=" style labels use the default font, while the values use
+// FreeSans9pt7b for a larger, cleaner look. -1 positions render as "ERR".
 inline void drawBigServoLine(int lineY, uint8_t id1, int pos1, uint8_t id2, int pos2) {
-  display.setFont(&FreeSans9pt7b);
-  display.setTextSize(1);
-  display.setCursor(0, lineY);
+  // lineY is the baseline for the big FreeSans9pt7b value.
+  // The small default-font label is placed just above that baseline.
 
+  // First pair: small label
+  display.setFont();
+  display.setTextSize(1);
+  display.setCursor(0, lineY - 7);
   if (id1 < 10) display.print("0");
   display.print(id1);
   display.print("=");
+
+  // First pair: big value
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  display.setCursor(18, lineY);
   if (pos1 == -1) {
     display.print("ERR");
   } else {
     display.print(pos1);
   }
 
-  display.print("  ");  // visual separator between the two servo pairs
-
+  // Second pair: small label
+  display.setFont();
+  display.setTextSize(1);
+  display.setCursor(64, lineY - 7);
   if (id2 < 10) display.print("0");
   display.print(id2);
   display.print("=");
+
+  // Second pair: big value
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  display.setCursor(82, lineY);
   if (pos2 == -1) {
     display.print("ERR");
   } else {
@@ -85,7 +100,7 @@ void runTeachingMode() {
 
     display.setFont();  // revert to default font for the mode indicator
     display.setTextSize(1);
-    display.setCursor(0, 60);
+    display.setCursor(0, 54);
     display.print("[TEACHING MODE]");
 
     display.display();
