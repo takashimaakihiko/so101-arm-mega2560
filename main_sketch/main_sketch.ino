@@ -46,7 +46,7 @@ void runRunMode() {
   for (int i = 0; i < SERVO_COUNT; i++) {
     int currentPos = st.ReadPos(SERVO_IDS[i]);
     if (currentPos >= 0) {
-      st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0, 0);
+      st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0);
     }
   }
 
@@ -76,14 +76,14 @@ void runRunMode() {
 
     // Gently move from the physical boot pose to the sequence start pose.
     for (int i = 0; i < SERVO_COUNT; i++) {
-      st.WritePosEx(SERVO_IDS[i], FIRST_POSE[i], 0, 300, 0);
+      st.WritePosEx(SERVO_IDS[i], FIRST_POSE[i], 300, 0);
     }
     delay(3000);  // Hold to guarantee arrival.
 
     // Stream the recorded trajectory.
     for (int step = 0; step < TRAJECTORY_STEPS; step++) {
       for (int i = 0; i < SERVO_COUNT; i++) {
-        st.WritePosEx(SERVO_IDS[i], RECORDED_TRAJECTORY[step][i], 0, 300, 0);
+        st.WritePosEx(SERVO_IDS[i], RECORDED_TRAJECTORY[step][i], 300, 0);
       }
       delay(20);  // Tune this interval to match the recorded playback rate.
     }

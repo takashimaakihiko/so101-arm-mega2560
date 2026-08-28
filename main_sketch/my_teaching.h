@@ -47,7 +47,7 @@ void runTeachingMode() {
   for (int i = 0; i < SERVO_COUNT; i++) {
     int currentPos = st.ReadPos(SERVO_IDS[i]);
     if (currentPos >= 0) {
-      st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0, 0);
+      st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0);
     }
     st.writeWord(SERVO_IDS[i], 16, GRAVITY_TORQUE);
   }
@@ -81,7 +81,7 @@ void runTeachingMode() {
     for (int i = 0; i < SERVO_COUNT; i++) {
       int currentPos = st.ReadPos(SERVO_IDS[i]);
       if (currentPos >= 0) {
-        st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0, 0);
+        st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0);
       }
     }
 
