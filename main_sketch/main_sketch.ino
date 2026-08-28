@@ -38,8 +38,9 @@ const int TRAJECTORY_STEPS = sizeof(RECORDED_TRAJECTORY) / sizeof(RECORDED_TRAJE
 // This function never returns; it holds the CPU in the H8 handshake loop.
 void runRunMode() {
   // Restore absolute full torque for automatic motion.
+  // Register 48 is the live SRAM Torque Limit (register 16 is EEPROM only).
   for (int i = 0; i < SERVO_COUNT; i++) {
-    st.writeWord(SERVO_IDS[i], 16, 1023);
+    st.writeWord(SERVO_IDS[i], 48, 1023);
   }
 
   // Lock the arm at its current boot position so it cannot drop suddenly.

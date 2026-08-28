@@ -69,13 +69,16 @@ void runTeachingMode() {
   // Gravity-compensation initialization
   // ------------------------------------------------------------------
   // Read the arm's current physical pose, command each servo to hold that
-  // pose immediately, and then limit the max torque for safe manual positioning.
+  // pose immediately, and then limit the current torque for safe manual positioning.
+  // Note: register 16 is the EEPROM Max Torque Limit and does not take effect
+  // immediately. Register 48 is the SRAM Torque Limit and controls the live
+  // output torque, which is what we need for gravity-compensated teaching.
   for (int i = 0; i < SERVO_COUNT; i++) {
     int currentPos = st.ReadPos(SERVO_IDS[i]);
     if (currentPos >= 0) {
       st.WritePosEx(SERVO_IDS[i], currentPos, 0, 0);
     }
-    st.writeWord(SERVO_IDS[i], 16, GRAVITY_TORQUE);
+    st.writeWord(SERVO_IDS[i], 48, GRAVITY_TORQUE);
   }
 
   // ------------------------------------------------------------------
