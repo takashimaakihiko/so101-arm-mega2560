@@ -17,18 +17,37 @@ const uint8_t SERVO_IDS[SERVO_COUNT] = {1, 2, 3, 4, 5, 6};
 extern SMS_STS st;
 extern Adafruit_SSD1306 display;
 
-// Helper to draw one OLED line with two servo labels/values.
-// pos values of -1 are rendered as "ERR".
-inline void drawServoLine(int lineY, const char* label1, int pos1, const char* label2, int pos2) {
+// Helper to draw one OLED line with two servo IDs/values.
+// Labels (01=, 02=, ...) are rendered at text size 1.
+// Values are rendered at text size 2 so the joint angles are easy to read.
+// -1 positions are rendered as "ERR". Columns are fixed to keep the layout stable.
+inline void drawBigServoLine(int lineY, uint8_t id1, int pos1, uint8_t id2, int pos2) {
+  // First label: size 1, column 0
+  display.setTextSize(1);
   display.setCursor(0, lineY);
-  display.print(label1);
+  if (id1 < 10) display.print("0");
+  display.print(id1);
+  display.print("=");
+
+  // First value: size 2, column 18
+  display.setTextSize(2);
+  display.setCursor(18, lineY);
   if (pos1 == -1) {
     display.print("ERR");
   } else {
     display.print(pos1);
   }
-  display.print(" ");
-  display.print(label2);
+
+  // Second label: size 1, column 64
+  display.setTextSize(1);
+  display.setCursor(64, lineY);
+  if (id2 < 10) display.print("0");
+  display.print(id2);
+  display.print("=");
+
+  // Second value: size 2, column 82
+  display.setTextSize(2);
+  display.setCursor(82, lineY);
   if (pos2 == -1) {
     display.print("ERR");
   } else {
@@ -62,16 +81,18 @@ void runTeachingMode() {
       pos[i] = st.ReadPos(SERVO_IDS[i]);
     }
 
-    // Render the 4-line display layout at 128x64 with text size 1.
+    // Render a 4-line display layout with large values for readability.
+    // Labels stay at size 1; joint values are drawn at size 2.
+    // Line height for size-2 text is 16 pixels, so rows are at y=0, 16, 32.
     display.clearDisplay();
-    display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
 
-    drawServoLine(0,  "ID1=", pos[0], "ID2=", pos[1]);
-    drawServoLine(8,  "ID3=", pos[2], "ID4=", pos[3]);
-    drawServoLine(16, "ID5=", pos[4], "ID6=", pos[5]);
+    drawBigServoLine(0,  1, pos[0], 2, pos[1]);
+    drawBigServoLine(16, 3, pos[2], 4, pos[3]);
+    drawBigServoLine(32, 5, pos[4], 6, pos[5]);
 
-    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.setCursor(0, 48);
     display.print("[TEACHING MODE]");
 
     display.display();
