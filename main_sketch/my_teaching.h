@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Fonts/FreeSans9pt7b.h>
 
 #define SERVO_COUNT 6
 const uint8_t SERVO_IDS[SERVO_COUNT] = {1, 2, 3, 4, 5, 6};
@@ -18,36 +19,27 @@ extern SMS_STS st;
 extern Adafruit_SSD1306 display;
 
 // Helper to draw one OLED line with two servo IDs/values.
-// Labels (01=, 02=, ...) are rendered at text size 1.
-// Values are rendered at text size 2 so the joint angles are easy to read.
-// -1 positions are rendered as "ERR". Columns are fixed to keep the layout stable.
+// Uses the FreeSans9pt7b GFX font for a clean, larger look without
+// the blocky pixel-doubling of setTextSize(2). -1 positions render as "ERR".
 inline void drawBigServoLine(int lineY, uint8_t id1, int pos1, uint8_t id2, int pos2) {
-  // First label: size 1, column 0
+  display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
   display.setCursor(0, lineY);
+
   if (id1 < 10) display.print("0");
   display.print(id1);
   display.print("=");
-
-  // First value: size 2, column 18
-  display.setTextSize(2);
-  display.setCursor(18, lineY);
   if (pos1 == -1) {
     display.print("ERR");
   } else {
     display.print(pos1);
   }
 
-  // Second label: size 1, column 64
-  display.setTextSize(1);
-  display.setCursor(64, lineY);
+  display.print("  ");  // visual separator between the two servo pairs
+
   if (id2 < 10) display.print("0");
   display.print(id2);
   display.print("=");
-
-  // Second value: size 2, column 82
-  display.setTextSize(2);
-  display.setCursor(82, lineY);
   if (pos2 == -1) {
     display.print("ERR");
   } else {
@@ -82,17 +74,18 @@ void runTeachingMode() {
     }
 
     // Render a 4-line display layout with large values for readability.
-    // Labels stay at size 1; joint values are drawn at size 2.
-    // Line height for size-2 text is 16 pixels, so rows are at y=0, 16, 32.
+    // FreeSans9pt7b is used for the servo pairs; the mode line stays small.
+    // Baseline positions are spaced 18 pixels apart to fit the 9pt font.
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
 
-    drawBigServoLine(0,  1, pos[0], 2, pos[1]);
-    drawBigServoLine(16, 3, pos[2], 4, pos[3]);
-    drawBigServoLine(32, 5, pos[4], 6, pos[5]);
+    drawBigServoLine(12, 1, pos[0], 2, pos[1]);
+    drawBigServoLine(30, 3, pos[2], 4, pos[3]);
+    drawBigServoLine(48, 5, pos[4], 6, pos[5]);
 
+    display.setFont();  // revert to default font for the mode indicator
     display.setTextSize(1);
-    display.setCursor(0, 56);
+    display.setCursor(0, 60);
     display.print("[TEACHING MODE]");
 
     display.display();
