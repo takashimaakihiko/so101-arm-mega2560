@@ -73,6 +73,7 @@ void runTeachingMode() {
   // Register 40 is the live Torque Enable bit (0 = off, 1 = on).
   for (int i = 0; i < SERVO_COUNT; i++) {
     st.writeWord(SERVO_IDS[i], 40, 0);
+    delay(2);  // small gap to avoid bus collisions between servos
   }
 
   // ------------------------------------------------------------------
@@ -80,9 +81,13 @@ void runTeachingMode() {
   // ------------------------------------------------------------------
   while (true) {
     // Read all joint encoder values for display.
+    // Add a short gap between consecutive reads to avoid collisions on the
+    // shared half-duplex bus.
     int pos[SERVO_COUNT];
     for (int i = 0; i < SERVO_COUNT; i++) {
-      pos[i] = st.ReadPos(SERVO_IDS[i]);
+      int rawPos = st.ReadPos(SERVO_IDS[i]);
+      pos[i] = (rawPos != -1) ? rawPos : -1;
+      delay(2);
     }
 
     // Render a 4-line display layout with large values for readability.
