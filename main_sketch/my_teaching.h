@@ -8,7 +8,7 @@
 #include <Fonts/FreeSans9pt7b.h>
 
 #define SERVO_COUNT 6
-const uint8_t SERVO_IDS[SERVO_COUNT] = {1, 2, 3, 4, 5, 6};
+const uint8_t SERVO_IDS[SERVO_COUNT] = {0, 1, 2, 3, 4, 5};
 
 // For SO101-style leader-arm teaching, the servos are put into a
 // back-drivable (torque-off) state so the arm can be posed by hand.
@@ -68,25 +68,51 @@ void runTeachingMode() {
   // ------------------------------------------------------------------
   // Teaching-mode initialization
   // ------------------------------------------------------------------
-  // Put all servos into torque-off state so the arm can be posed by hand.
-  // This matches the SO101 leader-arm style: read-only feedback for teaching.
+  // Use limited torque so each joint yields by hand and holds when released.
+  // Each servo follows an external displacement beyond the movement threshold.
   // Register 40 is the live Torque Enable bit (0 = off, 1 = on).
+  const uint16_t teachingTorque[SERVO_COUNT] = {75, 500, 370, 75, 0, 0};
+  const int movementThreshold = 12;
+  int holdPos[SERVO_COUNT];
+  int pos[SERVO_COUNT];
+
   for (int i = 0; i < SERVO_COUNT; i++) {
-    st.writeWord(SERVO_IDS[i], 40, 0);
+    st.writeByte(SERVO_IDS[i], 40, 0);
     delay(2);  // small gap to avoid bus collisions between servos
+    holdPos[i] = st.ReadPos(SERVO_IDS[i]);
+    if (holdPos[i] == -1) {
+      delay(5);
+      holdPos[i] = st.ReadPos(SERVO_IDS[i]);
+    }
+    pos[i] = holdPos[i];
+    if (holdPos[i] != -1 && teachingTorque[i] > 0) {
+      st.WritePosEx(SERVO_IDS[i], holdPos[i], 0, 0);
+      st.writeWord(SERVO_IDS[i], 48, teachingTorque[i]);
+      st.writeByte(SERVO_IDS[i], 40, 1);
+    }
+    delay(2);
   }
 
   // ------------------------------------------------------------------
   // Teaching-mode display loop
   // ------------------------------------------------------------------
   while (true) {
-    // Read all joint encoder values for display.
+    // Read all joint encoder values and move the hold target while handled.
     // Add a short gap between consecutive reads to avoid collisions on the
     // shared half-duplex bus.
-    int pos[SERVO_COUNT];
     for (int i = 0; i < SERVO_COUNT; i++) {
       int rawPos = st.ReadPos(SERVO_IDS[i]);
-      pos[i] = (rawPos != -1) ? rawPos : -1;
+      if (rawPos == -1) {
+        delay(5);
+        rawPos = st.ReadPos(SERVO_IDS[i]);
+      }
+      if (rawPos != -1) {
+        pos[i] = rawPos;
+      }
+      if (teachingTorque[i] > 0 && rawPos != -1 && holdPos[i] != -1 && abs(rawPos - holdPos[i]) >= movementThreshold) {
+        holdPos[i] = rawPos;
+        st.WritePosEx(SERVO_IDS[i], holdPos[i], 0, 0);
+      }
       delay(2);
     }
 
