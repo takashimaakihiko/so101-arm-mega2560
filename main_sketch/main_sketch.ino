@@ -38,6 +38,22 @@ void jointpos(int p1, int p2, int p3, int p4, int p5, int p6) {
   delay(3000);
 }
 
+void jointpos2(int p1, int p2, int p3, int p4, int p5, int p6) {
+  uint8_t ids[SERVO_COUNT];
+  int16_t positions[SERVO_COUNT] = {p1, p2, p3, p4, p5, p6};
+  uint16_t speeds[SERVO_COUNT];
+  uint8_t accelerations[SERVO_COUNT];
+
+  for (int i = 0; i < SERVO_COUNT; i++) {
+    ids[i] = SERVO_IDS[i];
+    speeds[i] = 600;
+    accelerations[i] = 0;
+  }
+
+  st.SyncWritePosEx(ids, SERVO_COUNT, positions, speeds, accelerations);
+  delay(3000);
+}
+
 void runSequence1() { 
   //グリッパの開閉は最小が2100 これより小さい値では動かない
   //グリッパの最大は3125でこれより大きい値をあたえると動かない
